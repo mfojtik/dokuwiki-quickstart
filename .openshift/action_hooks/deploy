@@ -28,7 +28,7 @@ if [ -d ${OPENSHIFT_REPO_DIR}php ]; then
 fi
 
 ln -sf ${dest_dir} ${OPENSHIFT_REPO_DIR}php
-ln -sf ${data_dir} ${OPENSHIFT_REPO_DIR}php/data
+ln -sf ${data_dir} ${OPENSHIFT_REPO_DIR}php
 
 set -e
 
