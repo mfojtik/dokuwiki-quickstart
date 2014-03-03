@@ -4,24 +4,39 @@
 # up again.  This script gets executed directly, so it could be python, php,
 # ruby, etc.
 
+dest_dir=${OPENSHIFT_DATA_DIR}current
+
+current_version=$(cat ${OPENSHIFT_BUILD_DEPENDENCIES_DIR}.current_version)
+install_dir=${OPENSHIFT_BUILD_DEPENDENCIES_DIR}${current_version}
+
+data_dir=${OPENSHIFT_DATA_DIR}data/
+
+if [ ! -d ${data_dir} ]; then
+  mkdir -p ${OPENSHIFT_DATA_DIR}data
+  mv ${install_dir}/data/* ${data_dir}
+fi
+
+if [ ! -d "${dest_dir}" ]; then
+  mkdir -p $dest_dir
+  cp -rf ${install_dir}/* ${dest_dir}/
+fi
+
+# Replace the php/ directory with provided clean Dokuwiki installation
+#
+if [ -d ${OPENSHIFT_REPO_DIR}php ]; then
+  rm -rf ${OPENSHIFT_REPO_DIR}php
+fi
+
+ln -sf ${dest_dir} ${OPENSHIFT_REPO_DIR}php
+ln -sf ${data_dir} ${OPENSHIFT_REPO_DIR}php/data
+
 set -e
 
-
-# Proceed only if `$OPENSHIFT_DATA_DIR` does not contain a `pages` 
+# Proceed only if `$OPENSHIFT_DATA_DIR` does not contain a `pages`
 # subdirectory.
 
-if [ ! -d "$OPENSHIFT_DATA_DIR/pages" ]; 
+if [ ! -d "$OPENSHIFT_DATA_DIR/pages" ];
 then
-    # move directory content
-    mv $OPENSHIFT_REPO_DIR/php/data/* $OPENSHIFT_DATA_DIR/
-    mv $OPENSHIFT_REPO_DIR/php/data/.??* $OPENSHIFT_DATA_DIR/
-    
-    # remove directory
-    rm -rf $OPENSHIFT_REPO_DIR/php/data
-    
-    # create link (optional)
-    #ln -sf $OPENSHIFT_DATA_DIR/ $OPENSHIFT_REPO_DIR/php/data
-    
     echo
     echo "done."
     echo "=================================================="
@@ -30,5 +45,8 @@ then
     echo "  Don't forget to change your wiki admin password!"
     echo "=================================================="
 else
+    if [ -d ${OPENSHIFT_REPO_DIR}.openshift/data ]; then
+      mv $OPENSHIFT_REPO_DIR/.openshift/data/* $data_dir
+    fi
     echo "This is not a fresh installation, skipping build"
-fi 
+fi

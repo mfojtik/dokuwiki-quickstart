@@ -3,3 +3,33 @@
 # available.  Otherwise it will execute while your application is stopped
 # before the deploy step.  This script gets executed directly, so it
 # could be python, php, ruby, etc.
+
+install_version="release_stable_2013-12-08"
+
+download_url="https://codeload.github.com/splitbrain/dokuwiki/legacy.tar.gz/${install_version}"
+
+# Download and install Dokuwiki
+
+install_dir=${OPENSHIFT_BUILD_DEPENDENCIES_DIR}${install_version}
+
+# Used in this script only
+current_version_dir=${OPENSHIFT_DATA_DIR}current
+
+#
+# If DokuWiki is already installed in the current gear, there
+# is nothing to build :-)
+#
+[ -d "${current_version_dir}" ] && exit 0
+
+mkdir -p $install_dir
+
+pushd ${install_dir} >/dev/null
+curl -s ${download_url} > dokuwiki-${install_version}.tar.gz
+tar --strip-components=1 -xzf wordpress-${install_version}.tar.gz
+rm -rf wordpress-${install_version}.tar.gz
+
+echo $install_version > ${OPENSHIFT_BUILD_DEPENDENCIES_DIR}.current_version
+popd >/dev/null
+
+cp -f ${OPENSHIFT_REPO_DIR}.openshift/conf/dokuwiki.php ${install_dir}/conf/dokuwiki.php
+cp -f ${OPENSHIFT_REPO_DIR}.openshift/conf/local.php ${install_dir}/conf/local.php
